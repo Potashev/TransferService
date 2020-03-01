@@ -1,0 +1,109 @@
+﻿
+@{
+    ViewBag.Title = "Страница пользователя";
+}
+
+<h2>Страница пользователя</h2>
+
+<div>
+    <input type="submit" id="logoutButton" value="Выйти" />
+</div>
+
+<div id="createBlock">
+    <h3>Совершить перевод</h3>
+    <table>
+        <tr><td><label>Кому: </label></td><td><input type="text" id="toUser" /></td></tr>
+        <tr><td><label>Сколько: </label></td><td><input type="text" id="powwwers" /></td></tr>
+    </table>
+    <button id="addtransfer">Совершить</button>
+</div>
+
+<div>
+    <input type="submit" id="getItemsButton" value="История переводов" />
+</div>
+
+<table class="table table-bordered" id="tblData">
+    <thead>
+        <tr class="success">
+            <td>Дата/Время перевода</td>
+            <td>Пользователь</td>
+            <td>Сумма перевода</td>
+        </tr>
+    </thead>
+    <tbody id="tblBody"></tbody>
+</table>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#addtransfer').click(function () {
+
+                var transfermodel = {
+                    ToUserName: $('#toUser').val(),
+                    Powwwers: $('#powwwers').val()
+                };
+                var token = sessionStorage.getItem('accessToken');
+
+                $.ajax({
+                    url: "/api/transfer/send",
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    data: JSON.stringify(transfermodel),
+                    processData: false,
+                    success: function (data) {
+                        alert(data);
+                        window.location.href = "UserPage";
+                    },
+                    error: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            $('#logoutButton').click(function () {
+
+                var token = sessionStorage.getItem('accessToken');
+
+                $.ajax({
+                    url: "/api/account/logout",
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function (data) {
+                        window.location.href = "Index";
+                    },
+                    error: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            $('#getItemsButton').click(function () {
+                $.ajax({
+                    url: '/api/transfer/history',
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer '
+                            + sessionStorage.getItem("accessToken")
+                    },
+                    success: function (data) {
+
+                        $('#divData').removeClass('hidden');
+                        $('#tblBody').empty();
+
+                        $.each(data, function (index, value) {
+                            var row = $('<tr><td>' + value.DateTime + '</td><td>'
+                                + value.UserName + '</td><td>'
+                                + value.Powwwers + '</td></tr>');
+                            $('#tblData').append(row);
+                        });
+                    }
+
+                });
+            });
+        });
+    </script>
